@@ -1,0 +1,187 @@
+<?xml version = "1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"DTD/xhtml1-strict.dtd">
+<!--
+ * Copyright (C) 2014-2016 Regents of the University of California.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * A copy of the GNU Lesser General Public License is in the file COPYING.
+-->
+<html xmlns = "http://www.w3.org/1999/xhtml">
+<meta charset="UTF-8">
+
+<head>
+  <title>NDN Get File via WebSocket</title>
+
+  <script type="text/javascript" src="../../build/ndn.js"></script>
+
+  <script type="text/javascript">
+    hostip = "localhost";
+    var face = new Face({port:9696,host:hostip,verify:false});
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /*
+     * Context for calling expressInterest to fetch a big file.
+     */
+    var ContentContext = function ContentContext(face, T0) {
+        this.T0 = T0;
+        this.face = face;
+      this.totalBlocks = 0;
+
+        this.firstReceivedSegmentNumber = null;
+        this.firstReceivedData = null;
+    };
+
+    ContentContext.prototype.expressInterest = function(name) {
+      var thisContext = this;
+      this.face.expressInterest
+        (name,
+         function(interest, data) { thisContext.onData(interest, data); },
+         function(interest) { thisContext.onTimeout(interest); });
+    };
+
+    ContentContext.prototype.onTimeout = function(interest) {
+          var T1 = new Date();
+          document.getElementById('content').innerHTML += "<p>Interest time out.</p>";
+            document.getElementById('content').innerHTML += "<p>Time elapsed: " + (T1 - this.T0) + " ms including 4s timeout</p>";
+            document.getElementById('content').innerHTML += "<p>Total number of blocks: " + this.totalBlocks + "</p>";
+    };
+
+    ContentContext.prototype.onData = function(interest, data) {
+        if (data.getContent().isNull()) {
+            console.log("data content is null");
+            return;
+        }
+
+        // Use the segmentNumber to load multiple segments.
+        var segmentNumber = data.getName().get(-1).toSegment();
+
+          if (this.firstReceivedSegmentNumber == null) {
+              // This is the first call.
+              this.firstReceivedSegmentNumber = segmentNumber;
+              if (segmentNumber != 0) {
+                  // Special case: Save this data packet object for later and request segment zero.
+                  this.firstReceivedData = data;
+                  var componentsForZero = data.getName().components.slice
+                      (0, data.getName().size() - 1);
+                  componentsForZero.push([0]);
+                  this.expressInterest(new Name(componentsForZero));
+                  return;
+              }
+          }
+
+        // Process received data here...
+        // Count content length
+        //nameStr = escape(data.getName().toUri());
+        this.totalBlocks++;
+
+        // Check for the special case if the saved content is for the next segment that we need.
+        if (this.firstReceivedData != null &&
+            this.firstReceivedSegmentNumber == segmentNumber + 1) {
+            // Substitute the saved data send its content and keep going.
+            data = this.firstReceivedData;
+            segmentNumber = segmentNumber + 1;
+            // Clear firstReceivedData to save memory.
+            this.firstReceivedData = null;
+
+            // Process received data here...
+          // Count content length
+          //nameStr = escape(data.getName().toUri());
+        //document.getElementById('content').innerHTML += "<p>Name string: " + nameStr + "</p>";
+        //document.getElementById('content').innerHTML += "<p>Content buffer length: " + data.getContent().size() + "</p>";
+        this.totalBlocks++;
+        }
+
+        var finalSegmentNumber = null;
+        if (data.getMetaInfo() != null && data.getMetaInfo().getFinalBlockId().getValue().size() > 0)
+            finalSegmentNumber = data.getMetaInfo().getFinalBlockId().toSegment();
+
+        if (finalSegmentNumber == null || segmentNumber != finalSegmentNumber) {
+            // Make a name for the next segment and get it.
+            //var segmentNumberPlus1 = NumToArray(segmentNumber + 1);
+            // Make a name for the next segment and get it.
+            var segmentNumberPlus1 = DataUtils.nonNegativeIntToBigEndian(segmentNumber + 1);
+            // Put a 0 byte in front.
+            var nextSegmentNumber = new Uint8Array(segmentNumberPlus1.length + 1);
+            nextSegmentNumber.set(segmentNumberPlus1, 1);
+
+            var components = data.getName().components.slice
+                (0, data.getName().size() - 1);
+            components.push(nextSegmentNumber);
+            this.expressInterest(new Name(components));
+        }
+        else {
+            // Final block received.
+            // Record stop time
+            var T1 = new Date();
+            document.getElementById('content').innerHTML += "<p>Final block received.</p>";
+            document.getElementById('content').innerHTML += "<p>Time elapsed: " + (T1 - this.T0) + " ms</p>";
+            document.getElementById('content').innerHTML += "<p>Total number of blocks: " + this.totalBlocks + "</p>";
+        }
+    };
+
+    /*
+     * Convert the big endian Uint8Array to an unsigned int.
+     * Don't check for overflow.
+     */
+    function ArrayToNum(bytes) {
+        var result = 0;
+        for (var i = 0; i < bytes.length; ++i) {
+            result = result * 10;
+            result += (bytes[i] - 48);
+        }
+        return result;
+    };
+
+    /*
+     * Convert the int value to a new big endian Uint8Array and return.
+     * If value is 0 or negative, return Uint8Array(0).
+     */
+    function NumToArray(value) {
+        value = Math.round(value);
+        if (value <= 0)
+            return new Uint8Array(0);
+
+        numString = value.toString();
+        var size = numString.length;
+        var result = new Uint8Array(size);
+        for (i = 0; i < size; i++) {
+          result[i] = numString.charCodeAt(i);
+        }
+        return result;
+    };
+
+    function run() {
+      document.getElementById('content').innerHTML += "<p>Started...</p>";
+      var name = new Name(document.getElementById('interest').value);
+      var context = new ContentContext(face, new Date());
+      context.expressInterest(name);
+    }
+
+  </script>
+
+</head>
+<body >
+
+  <form>
+    Please Enter an Interest:<br />
+    <input id="interest" type="text" name="INTEREST" size="50" value="/wentao.shang/choir_jail.png" />
+  </form>
+
+  <button onclick="run()">Fetch Content</button>
+
+  <p id="content">Result: <br/></p>
+
+</body>
+</html>

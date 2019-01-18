@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!--
+ * Copyright (C) 2013-2016 Regents of the University of California.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * A copy of the GNU Lesser General Public License is in the file COPYING.
+-->
+<html>
+<head>
+<title>NDN Ping</title>
+
+<!--
+  ndn.js
+  is a concatented version of the library,
+  built in /build
+-->
+<script type="text/javascript" src="../../build/ndn.js"></script>
+<script type="text/javascript" src="ndn-ping.js"></script>
+
+</head>
+
+<body>
+
+  <h1>NDN Ping example</h1>
+
+  Using ping responder on NDN testbed, which responds to Interests in <em>
+  /&lt;topo-prefix&gt;/ping/&lt;random-number&gt;</em>.
+
+  <h2>NDN Testbed Status</h2>
+  <p>Testbed content ping results retrieved using <a href="http://github.com/named-data/ndn-js">NDN-JS</a>, a javascript client library for NDN.</p>
+  <p>Websocket host: <span id="host"></span></p>
+  <table border="0" width="50%" id="pingreport" style="margin-left:20px">
+  </table>
+  <p>&nbsp;</p>
+
+
+</body>
+</html>

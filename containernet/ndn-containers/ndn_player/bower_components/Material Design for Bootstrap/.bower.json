@@ -1,0 +1,35 @@
+{
+  "name": "Material Design for Bootstrap",
+  "homepage": "http://shockwork.github.io/bootstrap-material-design-sass",
+  "authors": [
+    "Robert Stenbom <robert@shockwork.net>"
+  ],
+  "description": "Material Design theme for Bootstrap 3, SASS port",
+  "main": "css-compiled/material.css",
+  "keywords": [
+    "material",
+    "design",
+    "bootstrap",
+    "theme",
+    "google",
+    "android"
+  ],
+  "license": "https://github.com/shockwork/bootstrap-material-design-sass/blob/master/LICENSE.md",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "_release": "cec02cb9db",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "cec02cb9db4435c8390d97af79bf1e5903ee5b4e"
+  },
+  "_source": "https://github.com/shockwork/bootstrap-material-design-sass.git",
+  "_target": "*",
+  "_originalSource": "bootstrap-material-design-sass",
+  "_direct": true
+}

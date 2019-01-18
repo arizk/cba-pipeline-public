@@ -1,0 +1,60 @@
+# -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+import os
+from waflib import Logs, Utils, Context, Options
+
+VERSION='0.1'
+APPNAME="ndn-icp"
+
+def options(opt):
+    opt.load(['compiler_cxx', 'gnu_dirs'])
+    opt.load(['default-compiler-flags', 'boost'], tooldir=['.waf-tools'])
+
+    opt.add_option('--with-path-labelling', help='Enable path labelling. Also the forwarder and the library should have this option enablesd',
+                    dest='with_path_labelling', action='store_true', default=False)
+    
+def hello(ctx):
+    print('hello world')
+
+def configure(conf):
+    conf.load(['compiler_cxx',
+               'gnu_dirs',
+               'default-compiler-flags',
+               'boost'])
+    
+    conf.find_program('sh', var='SH', mandatory=True)
+    
+    USED_BOOST_LIBS = ['filesystem', 'regex', 'chrono', 'random', 'timer']
+    
+    conf.check_boost(lib=USED_BOOST_LIBS, mandatory=True)
+
+    if not 'PKG_CONFIG_PATH' in os.environ:
+        os.environ['PKG_CONFIG_PATH'] = ':'.join([
+            '/usr/lib/pkgconfig',
+            '/usr/local/lib/pkgconfig',
+            '/opt/local/lib/pkgconfig'])
+            
+    conf.check_cfg(package='libndn-cxx', args=['--cflags', '--libs'],
+                   uselib_store='NDN_CXX', mandatory=True)
+
+    conf.env['WITH_PATH_LABELLING'] = Options.options.with_path_labelling
+
+    extensions = ['PATH_LABELLING']
+
+    for extension in extensions:
+      if conf.env['WITH_%s' % extension]:
+        conf.define(extension, 1)
+        conf.msg('Compilation flag {0} set'.format(extension), 'yes')
+      else:
+        conf.msg('Compilation flag {0} set'.format(extension), 'not', color='YELLOW')
+
+def build(bld):
+    bld.program(
+        features = 'cxx cxxshlib',
+        target='ndn-icp',
+        source= bld.path.ant_glob('**/src/*.cpp'),
+        use='version BOOST NDN_CXX LIBRT',
+        cxxflags=[]
+        )
+        
+    bld.install_files('${PREFIX}/include', bld.path.ant_glob('**/src/*.hpp'))
+

@@ -1,0 +1,16 @@
+version: '2'
+services:
+  ndn-player:
+    build:
+      context: .
+    tty: true
+    stdin_open: true
+    network_mode: "bridge"
+    privileged: true
+    #volumes:
+    # - code:/code
+    container_name: ndn-dash-player
+    #ports:
+    # - 80:80
+    # - 9696:9696
+    # - 6363:6363

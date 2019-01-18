@@ -1,0 +1,69 @@
+<?xml version = "1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"DTD/xhtml1-strict.dtd">
+<!--
+ * Copyright (C) 2014-2016 Regents of the University of California.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * A copy of the GNU Lesser General Public License is in the file COPYING.
+-->
+<html xmlns = "http://www.w3.org/1999/xhtml">
+<meta charset="UTF-8">
+
+<head>
+  <title>NDN Get via WebSocket</title>
+
+  <script type="text/javascript" src="../../build/ndn.js"></script>
+
+  <script type="text/javascript">
+    var face = new Face({host: "localhost"});
+    //var face = new Face();
+
+    function onData(interest, data)
+    {
+      console.log("onData called.");
+      console.log("Host: " + face.connectionInfo.toString());
+      nameStr = escape(data.getName().toUri());
+      document.getElementById('content').innerHTML += "<p>Name string: " + nameStr + "</p>";
+      document.getElementById('content').innerHTML += "<p>Content buffer length: " + data.getContent().size() + "</p>";
+      document.getElementById('content').innerHTML += EncodingUtils.dataToHtml(data);
+    }
+
+    function onTimeout(interest)
+    {
+      console.log("onTimeout called. Re-expressing the interest.");
+      console.log("Host: " + face.connectionInfo.toString());
+      face.expressInterest(interest, onData, onTimeout);
+    }
+
+    function run() {
+      face.expressInterest(new Name(document.getElementById('interest').value), onData, onTimeout);
+    }
+
+  </script>
+
+</head>
+<body >
+
+  <form>
+    Please Enter an Interest:<br />
+    <input id="interest" type="text" name="INTEREST" size="50" value="/" />
+  </form>
+
+  <button id="testBtn" onclick="run()">Fetch Content</button>
+
+  <p id="content">Content: <br/></p>
+
+</body>
+</html>

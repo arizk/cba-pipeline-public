@@ -1,0 +1,1 @@
+global STOP_TC

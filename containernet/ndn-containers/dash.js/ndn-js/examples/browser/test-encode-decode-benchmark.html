@@ -1,0 +1,89 @@
+<?xml version = "1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"DTD/xhtml1-strict.dtd">
+<!--
+ * Copyright (C) 2014-2016 Regents of the University of California.
+ * @author: Jeff Thompson <jefft0@remap.ucla.edu>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * A copy of the GNU Lesser General Public License is in the file COPYING.
+-->
+<html xmlns = "http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>Test Encode/Decode Benchmark</title>
+
+    <script type="text/javascript" src="../../build/ndn.js"></script>
+    <script type="text/javascript" src="test-encode-decode-benchmark.js"></script>
+
+    <script type="text/javascript">
+    /**
+     * Call benchmarkEncodeDataSeconds and benchmarkDecodeDataSeconds with appropriate nInterations.  Print the
+     * results to console.log.
+     * @param {boolean} useComplex See benchmarkEncodeDataSeconds.
+     * @param {boolean} useCrypto See benchmarkEncodeDataSeconds and benchmarkDecodeDataSeconds.
+     * @param {function} continuation When finished call setTimeout(continuation, 100) so that
+     * the output is shown in the browser before continuing.
+     */
+    function benchmarkEncodeDecodeData(useComplex, useCrypto, continuation)
+    {
+      var format = "TLV ";
+      // Use nIterationsBeforeYield for crypto to yield and process callbacks accumulated by crypto.subtle.
+      var nIterationsBeforeYield = useCrypto ? 200 : null;
+      var nEncodeIterations = useCrypto ? (UseSubtleCrypto() ? 4000 : 200) : 80000;
+      TestEncodeDecodeBenchmark.benchmarkEncodeDataSeconds
+        (nEncodeIterations, useComplex, useCrypto, function(duration, encoding) {
+          document.getElementById('result').innerHTML +=
+            "Encode " + (useComplex ? "complex " : "simple  ") + format + " data: Crypto? " + (useCrypto ? "RSA" : "no ")
+            + ", Duration sec, Hz: " + duration + ", " + (nEncodeIterations / duration) + "<br/>";
+
+          // Use setTimeout so that the browser will update the display before continuing.
+          setTimeout(function() {
+            var nDecodeIterations = useCrypto ? (UseSubtleCrypto() ? 10000 : 2000) : 80000;
+            TestEncodeDecodeBenchmark.benchmarkDecodeDataSeconds
+              (nDecodeIterations, useCrypto, encoding, function(duration) {
+                document.getElementById('result').innerHTML +=
+                  "Decode " + (useComplex ? "complex " : "simple  ") + format + " data: Crypto? " + (useCrypto ? "RSA" : "no ")
+                  + ", Duration sec, Hz: " + duration + ", " + (nDecodeIterations / duration) + "<br/>";
+
+                setTimeout(continuation, 100);
+              }, nIterationsBeforeYield);
+          }, 100);
+        }, nIterationsBeforeYield);
+    }
+
+    function test(){
+      document.getElementById('result').innerHTML = "Results:<br/>";
+
+      benchmarkEncodeDecodeData(false, false, function() {
+      benchmarkEncodeDecodeData(true, false, function() {
+      benchmarkEncodeDecodeData(false, true, function() {
+      benchmarkEncodeDecodeData(true, true, function() {
+      document.getElementById('result').innerHTML += "Finished.<br/>";
+      });
+      });
+      });
+      });
+    }
+
+    </script>
+
+</head>
+<body >
+    <button onclick="test()">Test</button>
+
+    <p id="result"></p>
+
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "chrono": "cpp",
+        "*.ipp": "cpp",
+        "random": "cpp",
+        "typeinfo": "cpp"
+    }
+}

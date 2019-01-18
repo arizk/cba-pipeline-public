@@ -1,0 +1,119 @@
+<?xml version = "1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"DTD/xhtml1-strict.dtd">
+<!--
+ * Copyright (C) 2014-2016 Regents of the University of California.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * A copy of the GNU Lesser General Public License is in the file COPYING.
+-->
+<html xmlns = "http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>NDN Encode/Decode Interest</title>
+
+    <script type="text/javascript" src="../../build/ndn.js"></script>
+
+    <script type="text/javascript">
+        function encode() {
+            var interest = new Interest( new Name(document.getElementById('interest').value ) );
+
+            interest.setMinSuffixComponents(2);
+            interest.setMaxSuffixComponents(4);
+            interest.setChildSelector(1);
+            interest.setMustBeFresh(false);
+            interest.setInterestLifetimeMilliseconds(30000);
+            interest.setNonce(new Buffer([0x61, 0x62, 0x61, 0x62, 0x61, 0x62]));
+            var pkd = [];
+            for (i = 0; i < 32; ++i)
+                pkd.push(i);
+            interest.getKeyLocator().setType(KeyLocatorType.KEY_LOCATOR_DIGEST);
+            interest.getKeyLocator().setKeyData(new Buffer(pkd));
+            interest.setExclude(new Exclude());
+            interest.getExclude().appendComponent(Name.fromEscapedString("abc"));
+            interest.getExclude().appendAny();
+
+            var output = EncodingUtils.encodeToHexInterest(interest);
+
+            document.getElementById('result').innerHTML = output;
+
+        }
+
+        function decode() {
+            var input = document.getElementById('result').innerHTML;
+
+            var interest = EncodingUtils.decodeHexInterest(input);
+
+            if (LOG>3)console.log('INTEREST DECODED');
+            if (LOG>3)console.log(interest);
+
+            ///////////////////////////////////////
+
+            var output ="";
+
+            if (interest.getName() != null)
+                output += "Name: " + interest.getName().toUri() + "<br/>";
+            if (interest.getMinSuffixComponents() != null )
+                output += "MinSuffixComponents : " + interest.getMinSuffixComponents() + "<br/>";
+            if (interest.getMaxSuffixComponents() != null )
+                output += "MaxSuffixComponents : " + interest.getMaxSuffixComponents() + "<br/>";
+
+            output += "KeyLocator: ";
+            if (interest.getKeyLocator().getType() >= 0) {
+                if (interest.getKeyLocator().getType() ==KeyLocatorType.KEY_LOCATOR_DIGEST)
+                  output += "KeyLocatorDigest: " + interest.getKeyLocator().getKeyData().toHex();
+                else if (interest.getKeyLocator().getType() == KeyLocatorType.KEYNAME)
+                  output += "KeyName: " + interest.getKeyLocator().getKeyName().toUri();
+                else
+                  output += "<unrecognized ndn_KeyLocatorType>";
+            }
+            else
+                output += "<none>";
+            output += "<br/>";
+
+            if (interest.getChildSelector() != null )
+                output += "ChildSelector: " + interest.getChildSelector() + "<br/>";
+            output += "MustBeFresh: " + interest.getMustBeFresh() + "<br/>";
+            if (interest.getInterestLifetimeMilliseconds() != null )
+                output += "InterestLifetime (milliseconds): " + interest.getInterestLifetimeMilliseconds() + "<br/>";
+            if (interest.getNonce().size() > 0)
+                output += "Nonce: " + interest.getNonce().toHex() + "<br/>";
+            if (interest.getExclude() != null )
+                output += "Exclude: " + interest.getExclude().toUri() + "<br/>";
+
+            document.getElementById('result').innerHTML = output;
+        }
+
+    </script>
+
+</head>
+<body >
+    <form>
+
+        Please Enter an Interest:<br />
+
+        <input id="interest" type="text" name="INTEREST" value="/ndn/abc" />
+
+    </form>
+    <button onclick="encode()">Encode</button>
+    <button onclick="decode()">Decode</button>
+
+            <p id="result"></p>
+
+
+
+        <!--  p id="result">01d2f2fafdc12e4d2e532e6c6f63616c686f737400fabdc12e4d2e53525600faa563636e6400fa9d4b4559000002d28e310000</p-->
+
+</body>
+</html>

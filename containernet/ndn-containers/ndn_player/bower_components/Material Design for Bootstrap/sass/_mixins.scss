@@ -1,0 +1,19 @@
+@mixin button-variant($color) {
+    background-color: $color;
+};
+
+@mixin alert-variant($color) {
+    background-color: $color;
+};
+
+@mixin progress-bar-variant($color) {
+    background-color: $color;
+};
+
+@mixin navbar-variant($color) {
+    background-color: $color;
+};
+
+@mixin icon-variant($color) {
+    color: $color;
+}

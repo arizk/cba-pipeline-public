@@ -1,0 +1,68 @@
+<?xml version = "1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"DTD/xhtml1-strict.dtd">
+<!--
+ * Copyright (C) 2014-2016 Regents of the University of California.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * A copy of the GNU Lesser General Public License is in the file COPYING.
+-->
+<html xmlns = "http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>Test WebSocket Support</title>
+
+    <script type="text/javascript">
+
+        function test(){
+            var output = "";
+
+            if ('WebSocket' in window) {
+                output += "This browser support WebSocket.";
+            } else {
+                output += "No WebSocket support.";
+            }
+
+            document.getElementById('result').innerHTML += output;
+
+            console.log("starting websocket...");
+            if ("WebSocket" in window) {
+                var ws = new WebSocket("ws://localhost:9696");
+
+                ws.onopen = function() {
+                    console.log("WebSockets connection opened");
+                    ws.send("Hello Server (from client).");
+                }
+                ws.onmessage = function(e) {
+                    console.log("Got from server: " + e.data);
+                }
+                ws.onclose = function() {
+                    console.log("WebSockets connection closed");
+                }
+            } else {
+                alert("No WebSockets support");
+            }
+
+        }
+
+    </script>
+
+</head>
+<body >
+    <button onclick="test()">Test Now!</button>
+
+    <p id="result">Result here: </p>
+
+</body>
+</html>

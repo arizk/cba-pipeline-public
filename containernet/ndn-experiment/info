@@ -1,0 +1,20 @@
+In [1]: getInterfaceStataAllHosts(net.hosts)                                                 │
+  Name  Interface      RXBytes    TXBytes                                                    │
+------  -----------  ---------  ---------                                                    │
+     0  0-eth0            1446      14955                                                    │
+     0  eth0               972        108                                                    │
+     0  lo                   0          0                                                    │
+     0  server             780      14847                                                    │
+     2  2-eth0           15603        888                                                    │
+     2  2-eth1             756          0                                                    │
+     2  eth0               972        108                                                    │
+     2  lo                   0          0                                                    │
+     2  server           14079        888                                                    │
+     4  4-eth0             648        108                                                    │
+     4  4-eth1             756          0                                                    │
+     4  eth0               810        108                                                    │
+     4  lo                   0          0                                                    │
+     4  server               0          0                                                    │
+     6  6-eth0             648        108                                                    │
+     6  eth0               648        108                                                    │
+     6  lo                   0          0

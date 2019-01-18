@@ -1,0 +1,18 @@
+html, body, #root {
+  margin: 0;
+  height: 100%;
+}
+
+
+#cy {
+  position: absolute;
+  width: 100%;
+  height: auto;
+  top: 50px;
+  bottom: 50px;
+  left: 0px;
+}
+
+.btn-space {
+    margin-right: 5px;
+}
