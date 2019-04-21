@@ -461,20 +461,6 @@ def waitForPlayback(servers, clients, switches, net, playbacktime, algo, qoe_wei
     for client, aa in zip(clients, aas):
         getDataFromClient(algo, toptype, playbacktime, qoe_weights, use_memory, client, epoch)
 
-def bandWidthTest(servers, clients, net, playbacktime):
-    time.sleep(15)
-    server = net.get(servers[0])
-    serverIP = server.IP()
-
-    info('*** Starting IPerf on Server\n')
-    startIperfServer(server)
-
-    for client in clients:
-        result = startIperfClient(net.get(client), serverIP, playbacktime)
-        shapeBandwidth(playbacktime, [client])
-        info('*** IperfResult {0} {1}\n'.format(client, net.get(client).cmd('cat /iperf')))
-        killPlayer(net.get(client))
-
 def getDataFromClient(algo, topology, duration, qoe_weights, use_memory, client, epoch):
     filename = "../results/{0}_{1}_{2}_{3}_{4}_{5}_{6}".format(algo, topology, duration, '-'.join([str(q) for q in qoe_weights]), 
                                                            'memory' if use_memory else 'no-memory', client, epoch)
@@ -530,99 +516,6 @@ def addNDNRoute(source, dest, cost=1, con_type='tcp'):
     elif con_type == 'auto':
         source.sendCmd('nfd-autoreg --prefix=/n -w 10.0.0.0/8 &')
 
-
-def listFilesInRepo(node):
-    return node.cmd('repo-ng-ls')
-
-
-def getInterfaceStataAllHosts(hosts, ret_data=False):
-    data = []
-    for host in hosts:
-        if_host = Ifcfg(host.cmd('ifconfig -a'))
-        for adapter in if_host.interfaces:
-            if adapter.find('eth') != -1:
-                res = if_host.get_interface(adapter).get_values()
-                data.append([host.name, res['interface'], res['rxbytes'],
-                             res['txbytes'], res['rxdroppedpkts']])
-    # return [x.get_interface(x.interfaces[0]).get_values() for x in ]
-    if ret_data:
-        return data
-    print tabulate(data, headers=['Name', 'Interface', 'RXBytes', 'TXBytes', 'Rxdroppedpkts'])
-
-
-'''
-map(getNDNDataStata, net.hosts)
-'''
-
-
-def getNDNDataStata(hosts, ret_data=False):
-    PAKETS = "{ndn:/localhost/nfd/status/1}packetCounters"
-    BYTES = "{ndn:/localhost/nfd/status/1}byteCounters"
-    INCOMING_BYTES = "{ndn:/localhost/nfd/status/1}incomingBytes"
-    OUTGOING_BYTES = "{ndn:/localhost/nfd/status/1}outgoingBytes"
-    NDATA = "{ndn:/localhost/nfd/status/1}nDatas"
-    NINTEREST = "{ndn:/localhost/nfd/status/1}nInterests"
-    INCOMING_PAKETS = "{ndn:/localhost/nfd/status/1}incomingPackets"
-    OUTGOING_PAKETS = "{ndn:/localhost/nfd/status/1}outgoingPackets"
-    data = []
-    for node in hosts:
-        xml = node.cmd('nfd-status -x')
-        doc = etree.fromstring(xml)
-        for b in doc.findall(".//{ndn:/localhost/nfd/status/1}localUri/."):
-            # print b.text
-            # print b.getparent().getchildren()[0].text
-            # TODO SRC, DST different
-            if "udp" in b.text:
-                ndntype = 'udp'
-            elif "tcp" in b.text:
-                ndntype = 'tcp'
-            elif "ether" in b.text:
-                ndntype = 'ether'
-            else:
-                break
-            # print 'Found Face ID'
-            els = b.getparent()
-            stats = dict([(res.tag, res.text) for res in els.iter()])
-            # print stats
-            # TODO replace with get
-            data.append([node.name, ndntype, stats.get(INCOMING_BYTES, 0), stats.get(OUTGOING_BYTES, 0), stats.get(NDATA, 0),
-                         stats.get(NINTEREST, 0),  stats.get(INCOMING_PAKETS, 0),  stats.get(OUTGOING_PAKETS, 0)])
-            # if not ret_data:
-            # print 'Host: {0}, INCOMING_BYTES: {1}, OUTGOING_BYTES {2}, NDATA {3}, NINTEREST {4}, INCOMING_PAKETS {5}, OUTGOING_PAKETS {6}'.format(node, stats[INCOMING_BYTES], stats[OUTGOING_BYTES], stats[NDATA], stats[NINTEREST],  stats[INCOMING_PAKETS],  stats[OUTGOING_PAKETS])
-    if ret_data:
-        return data
-    print tabulate(data, headers=['Name', 'Type' 'INCOMING_BYTES', 'OUTGOING_BYTES', 'NDATA', 'NINTEREST', 'INCOMING_PAKETS', 'OUTGOING_PAKETS'])
-
-
-def listLogs(node):
-    NFD_LOG = "/var/log/nfd.out"
-    NFD_ERROR_LOG = "/var/log/nfd-error.out"
-
-    NDN_COPY_LOG = "/var/log/copy-repo.log"
-    NDN_COPY_ERROR = "/var/log/copy-repo-error.log"
-
-    NDNFS_LOG = "/var/log/ndnfs.log"
-    NDNFS_SERVER_LOG = "/var/log/ndnfs-server.log"
-
-    REPO_NG_LOG = "/var/log/repong.log"
-    REPONG_ERROR_LOG = "/var/log/repong-error.log"
-
-    return node.cmd(
-        'tail {0} {1} {2}'.format(REPO_NG_LOG, NFD_LOG, NDN_COPY_LOG))
-
-
-"""
-/ndn/broadcast/ndnfs/videos/DashJsMediaFile/ElephantsDream_H264BPL30_0100.264.dash/%FD%00%00%01%5D%A3O%EF1/%00%192/sha256digest=981f889303b396519c1c1dc01aa472ab4714e70f0a283aba0679b59583fead17
-/ndn/broadcast/ndnfs/videos/DashJsMediaFile/ElephantsDream_H264BPL30_0100.264.dash/%FD%00%00%01%5D%A3O%EF1/%00%193/sha256digest=2a4ee843e3ac3b21f341de4ec45b33eaaef49dbb7567edea32ea60f14a44a62d
-/ndn/broadcast/ndnfs/videos/DashJsMediaFile/ElephantsDream_H264BPL30_0100.264.dash/%FD%00%00%01%5D%A3O%EF1/%00%194/sha256digest=d30753f707f5a983bbad98b0c37ba6ddc29da0dfb2068eb40b61ad78ee9b06fb
-/ndn/broadcast/ndnfs/videos/DashJsMediaFile/ElephantsDream_H264BPL30_0100.264.dash/%FD%00%00%01%5D%A3O%EF1/%00%195/sha256digest=7e17adb27923a9af8677a09e46217a73ac1d58def212073ab09f482dcc6e163c
-Total number of data = 72910
-
-For TOS Dataset and Repo-Ng Total data should be
-Total number of data = 39541
-"""
-
-
 def checkRepoNGInitDone(node):
     status = node.cmd('ls /INITDONE')
     if 'No such file or directory' not in status:
@@ -640,61 +533,10 @@ def checkRepoNGInitDone(node):
         # print status
         return False
 
-def listFiles(node):
-    print node.cmd("find /videos/")
-
-'''FINISHED DOWNLOADING ndn:/n/a/10'''
-def checkPlaybackDone(node, time, segmentlegth=2):
-    status = node.cmd('grep "FINISHED DOWNLOADING" /log | tail -n 1')
-    #if 'No such file or directory' not in status:
-    #    return True
-    # s = node.cmd('repo-ng-ls')
-    expectsegment = 50
-    latestsegment = re. re.findall(r'\d+', status)[0]
-    print "Got status {0}, extracted latest segment {1}, expect {2}".format(status, latestsegment, expectsegment)
-    if expectsegment == latestsegment:
-        return True
-    else:
-        return False
-
-def listFiles(node):
-    print node.cmd("find /videos/")
-# https://github.com/signorello/mini-ndn/blob/master/ndn/nfd.py
-
-
 def setStrategy(node, name, strategy):
     print node.cmd("nfdc set-strategy %s ndn:/localhost/nfd/strategy/%s" %
                    (name, strategy))
     # time.sleep(0.5)
-
-
-def getNFDInfo(host):
-    data = host.cmd('nfdc status report xml')
-    # TODO Parse XML
-
-
-def registerFace(host, faceid, prefix, cost=0):
-    print host.cmd("nfdc register -c {0} {1} {2}".format(cost, faceid, prefix))
-
-
-def getFaces(host):
-    return host.cmd('nfd-status -f')
-
-
-def getRoutes(host):
-    return host.cmd('nfd-status -r')
-
-
-'''/code/executeDockerScenario.sh -nohead -n -bola 0.8 12 -u /n/mpd
-p is extended PANDA, alpha 
-bola is bola, alpha is 12
-fb is regular panda
-br BufferRateBased (AdapTech)
-r ratebased
-b BufferBased regular
-bt BufferBasedThreeThreshold  
-nr no adaptation (test for caching)
-'''
 
 def startPlayer(host=None,
                 mpd="/n/mpd",
@@ -707,6 +549,16 @@ def startPlayer(host=None,
                 use_memory=False,
                 epoch=-1,
                 timesteps_per_epoch=100):
+    '''/code/executeDockerScenario.sh -nohead -n -bola 0.8 12 -u /n/mpd
+    p is extended PANDA, alpha 
+    bola is bola, alpha is 12
+    fb is regular panda
+    br BufferRateBased (AdapTech)
+    r ratebased
+    b BufferBased regular
+    bt BufferBasedThreeThreshold  
+    nr no adaptation (test for caching)
+    '''
     # TODO Player does not start
     if aa == 'bola' or aa == 'fb':
         sampleSize = ''
@@ -750,21 +602,8 @@ def startPlayer(host=None,
     return data
     # TODO Parse XML
 
-def startIperfClient(host, serverIP, duration):
-    cmd = 'iperf -c {0} -i 1 -t {1} > /iperf &'.format(serverIP, duration)
-    print cmd
-    host.sendCmd(cmd)
-
-def startIperfServer(server):
-    server.sendCmd('iperf -s &')
-
 def killPlayer(host):
     print host.cmd('pkill qtsampleplayer')
-
-
-def getFile(node, path="/ndn/broadcast/ndnfs/videos/DashJsMediaFile/NDN.mpd"):
-    print(node.cmd("ndngetfile {0}".format(path)))
-
 
 if __name__ == '__main__':
     setLogLevel('info')
