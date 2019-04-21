@@ -28,7 +28,6 @@ poster/
 raspberry_pi/
 results/
 router/
-util/
 **/*.DS_Store
 .ipynb_checkpoints/
 dash.js/
