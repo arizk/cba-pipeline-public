@@ -39,7 +39,7 @@
      pip: name=python-iptables state=latest
 
    - name: install python-fnss
-     pip: name=fnss state=latest
+     pip: name=fnss version=0.8.2
   
    - name: install pandas
      pip: name=pandas state=latest
