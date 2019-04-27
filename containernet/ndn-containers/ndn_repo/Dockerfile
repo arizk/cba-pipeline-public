@@ -111,4 +111,5 @@ RUN mv /usr/sbin/tcpdump /usr/bin/tcpdump
  
 ARG STORAGE_TYPE
 ENV STORAGE_TYPE ${STORAGE_TYPE}
+RUN chmod +x /*.sh
 CMD /bin/bash /ndn-entrypoint.sh $STORAGE_TYPE

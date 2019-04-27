@@ -21,13 +21,15 @@
      shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
    - name: install Docker CE repos (2/3)
-     shell: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+     #shell: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+     shell: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) pool stable amd64"
 
    - name: install Docker CE repos (3/3)
      shell: apt-get -qq update
 
    - name: install Docker CE
-     apt: name=docker-ce state=installed
+     #apt: name=docker-ce state=installed
+     apt: name=docker-ce=17.06.2~ce-0~ubuntu force=yes
 
    - name: install pytest
      pip: name=pytest state=latest
@@ -36,7 +38,10 @@
      pip: name=docker version=2.0.2
 
    - name: install python-iptables
-     pip: name=python-iptables state=latest
+     pip: name=python-iptables version=0.12
+
+   - name: install networkx
+     pip: name=networkx version=2.2
 
    - name: install python-fnss
      pip: name=fnss version=0.8.2

@@ -10,6 +10,8 @@ services:
     #volumes:
     # - code:/code
     container_name: ndn-dash-player
+    cap_add:
+      - NET_ADMIN
     #ports:
     # - 80:80
     # - 9696:9696

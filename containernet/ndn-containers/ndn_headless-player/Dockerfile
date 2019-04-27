@@ -80,4 +80,6 @@ ADD code /code
 ADD nfd.conf /usr/local/etc/ndn/nfd.conf
 RUN /code/createClient.sh
 ADD ndn-entrypoint.sh /ndn-entrypoint.sh
+RUN chmod +x /usr/local/bin/nfd
+RUN chmod +x /*.sh
 ENTRYPOINT /ndn-entrypoint.sh

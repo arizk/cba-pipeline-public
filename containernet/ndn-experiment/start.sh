@@ -41,7 +41,7 @@ fi
 if [ "$1" == '--build-repo' ]
 then
     echo "Build Repo"
-    cd /home/ubuntu/containernet/ndn/containers/ndn_repo/
+    cd /home/ubuntu/containernet/ndn-containers/ndn_repo/
     docker-compose build --build-arg STORAGE_TYPE=repong-bbb ndn
 fi
 if [ "$1" == '--build-player' ]
