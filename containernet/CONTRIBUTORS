@@ -1,3 +1,17 @@
+CBA Pipeline Contributors
+
+CBA Pipeline is the evaluation software used in the paper "CBA: Context-based Adaptation" by Bastian Alt, Trevor Ballard, Ralf Steinmetz, Heinz Koeppl and Amr Rizk.
+
+Primary CBA Pipeline contributors include:
+
+Trevor Ballard
+Bastian Alt
+Denny Stohr
+Timo Kahle
+Amr Rizk
+
+
+
 Mininet Contributors
 
 Mininet is an open source project and we gratefully acknowledge
@@ -65,6 +79,3 @@ Steven Van Rossem
 Malte Splietker
 Dennis Sehring
 Johannes Kampmeyer
-
-
-

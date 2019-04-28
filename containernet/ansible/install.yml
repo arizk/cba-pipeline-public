@@ -28,7 +28,6 @@
      shell: apt-get -qq update
 
    - name: install Docker CE
-     #apt: name=docker-ce state=installed
      apt: name=docker-ce=17.06.2~ce-0~ubuntu force=yes
 
    - name: install pytest
