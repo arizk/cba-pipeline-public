@@ -48,6 +48,15 @@
    - name: install pandas
      pip: name=pandas state=latest
 
+   - name: install lxml
+     pip: name=lxml state=latest
+
+   - name: install tabulate
+     pip: name=tabulate state=latest
+
+   - name: install ifparser
+     pip: name=ifparser state=latest
+
    - name: built and install Containernet (using Mininet installer)
      shell: containernet/util/install.sh
      args:
