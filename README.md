@@ -28,17 +28,16 @@ The actual execution takes place with Vagrant, so install it with
 We also need to set up pip:
 
     sudo apt install python-pip
-    sudo pip install --upgrade python-iptables==0.12
 
 ## Installing the pipeline
 First, clone the cba-pipeline repo. It is several GBs because it has a lot of multimedia data, so it will probably take awhile:
 
-    git clone https://github.com/ballardt/cba-pipeline
-	cd cba-pipeline
-	mkdir results
+    git clone https://github.com/arizk/cba-pipeline-public
+	cd cba-pipeline-public
 
-There will be a Vagrantfile in the cba-pipeline root repository, so we can set it up and access it via
+There will be a Vagrantfile in the containernet folder, so we can set it up and access it via
 
+	cd containernet
     vagrant up
 	vagrant ssh
 
